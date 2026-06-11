@@ -424,14 +424,27 @@
         const { createClient } = window.supabase;
         let supabase = null;
 
+        const form = document.getElementById('patientForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const infoMessage = document.getElementById('infoMessage');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const recordCount = document.getElementById('recordCount');
+
         async function loadSupabaseConfig() {
             try {
                 const response = await fetch('/api/config');
-                if (!response.ok) throw new Error('No se pudo cargar la configuración de Supabase');
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    const message = errorData?.error || 'No se pudo cargar la configuración de Supabase';
+                    throw new Error(message);
+                }
 
                 const config = await response.json();
                 if (!config?.SUPABASE_URL || !config?.SUPABASE_KEY) {
-                    throw new Error('Faltan credenciales de Supabase en la configuración');
+                    throw new Error('Faltan credenciales de Supabase en el servidor');
                 }
 
                 supabase = createClient(config.SUPABASE_URL, config.SUPABASE_KEY);
@@ -442,15 +455,6 @@
                 throw err;
             }
         }
-
-        const form = document.getElementById('patientForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const successMessage = document.getElementById('successMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        const infoMessage = document.getElementById('infoMessage');
-        const connectionStatus = document.getElementById('connectionStatus');
-        const recordCount = document.getElementById('recordCount');
 
         // Mostrar/ocultar mensajes
         function showMessage(element, text, duration = 4000) {
